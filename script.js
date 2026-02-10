@@ -1,18 +1,56 @@
-import CONFIG from './config.js';
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
+import { firebaseConfig, GEMINI_CONFIG } from './config.js';
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// DOM Elements
 const chatContainer = document.getElementById('chat-container');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 const historyList = document.getElementById('history-list');
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const userProfile = document.getElementById('user-profile');
+const userNameText = document.getElementById('user-name');
+const userAvatar = document.getElementById('user-avatar');
 
-// Ініціалізація контексту для українського AI
-const SYSTEM_PROMPT = "Ти — AI Друг, корисний та ввічливий асистент. Ти завжди відповідаєш українською мовою. Твоє завдання — допомагати користувачеві з його запитами.";
+const SYSTEM_PROMPT = "Ти — український AI Друг. Відповідай виключно українською мовою. Будь корисним, щирим та лаконічним.";
 
-// Placeholder для майбутньої інтеграції Firebase Auth
-document.getElementById('login-btn').addEventListener('click', () => {
-    console.log("Ініціалізація Firebase Auth...");
-    alert("Інтеграція з Google Sign-In скоро з'явиться!");
+// --- Authentication Logic ---
+
+loginBtn.addEventListener('click', async () => {
+    try {
+        await signInWithPopup(auth, provider);
+    } catch (error) {
+        console.error("Auth Error:", error);
+        alert("Помилка входу. Перевірте консоль.");
+    }
 });
+
+logoutBtn.addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        loginBtn.classList.add('hidden');
+        userProfile.classList.remove('hidden');
+        userNameText.innerText = user.displayName;
+        userAvatar.src = user.photoURL;
+        userInput.disabled = false;
+        userInput.placeholder = "Напишіть повідомлення...";
+    } else {
+        loginBtn.classList.remove('hidden');
+        userProfile.classList.add('hidden');
+        userInput.disabled = true;
+        userInput.placeholder = "Будь ласка, увійдіть...";
+        chatContainer.innerHTML = `<div class="welcome-screen"><h1>Привіт! Я твій AI Друг.</h1><p>Авторизуйся через Google, щоб почати.</p></div>`;
+    }
+});
+
+// --- Chat Logic ---
 
 userInput.addEventListener('input', () => {
     userInput.style.height = 'auto';
@@ -21,7 +59,7 @@ userInput.addEventListener('input', () => {
 });
 
 userInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !userInput.disabled) {
         e.preventDefault();
         handleSendMessage();
     }
@@ -33,8 +71,10 @@ async function handleSendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
 
-    const welcome = document.querySelector('.welcome-screen');
-    if (welcome) welcome.remove();
+    // Clear welcome screen
+    if (document.querySelector('.welcome-screen')) {
+        chatContainer.innerHTML = '';
+    }
 
     appendMessage('user', text);
     userInput.value = '';
@@ -44,13 +84,12 @@ async function handleSendMessage() {
     const loader = showLoader();
 
     try {
-        const response = await fetch(`${CONFIG.API_URL}?key=${CONFIG.GEMINI_API_KEY}`, {
+        const response = await fetch(`${GEMINI_CONFIG.API_URL}?key=${GEMINI_CONFIG.API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
-                    role: "user",
-                    parts: [{ text: `${SYSTEM_PROMPT}\n\nКористувач: ${text}` }]
+                    parts: [{ text: `${SYSTEM_PROMPT}\nКористувач: ${text}` }]
                 }]
             })
         });
@@ -59,15 +98,15 @@ async function handleSendMessage() {
         loader.remove();
 
         if (data.candidates && data.candidates[0].content.parts[0].text) {
-            const aiResponse = data.candidates[0].content.parts[0].text;
-            appendMessage('ai', aiResponse);
+            appendMessage('ai', data.candidates[0].content.parts[0].text);
             saveToHistory(text);
         } else {
-            throw new Error('Помилка формату API');
+            throw new Error("Некоректна відповідь від API");
         }
     } catch (error) {
         loader.remove();
-        appendMessage('ai', "Вибачте, сталася помилка: " + error.message);
+        appendMessage('ai', "Сталася помилка при зверненні до Gemini. Перевір API ключ.");
+        console.error(error);
     }
 }
 
@@ -76,7 +115,7 @@ function appendMessage(role, text) {
     msgDiv.className = `message ${role}-message`;
     msgDiv.innerText = text;
     chatContainer.appendChild(msgDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
 }
 
 function showLoader() {
@@ -89,11 +128,9 @@ function showLoader() {
 }
 
 function saveToHistory(text) {
-    if (historyList.querySelector('.empty-state')) {
-        historyList.innerHTML = '';
-    }
-    const historyItem = document.createElement('div');
-    historyItem.className = 'history-item';
-    historyItem.innerText = text;
-    historyList.prepend(historyItem);
+    if (historyList.querySelector('.empty-state')) historyList.innerHTML = '';
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerText = text;
+    historyList.prepend(item);
 }
