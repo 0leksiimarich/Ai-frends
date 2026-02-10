@@ -1,4 +1,4 @@
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyCfOnjjk3OcF68LP1bu72BAQ1MOMBeqP0s",
   authDomain: "ai-frends.firebaseapp.com",
   projectId: "ai-frends",
@@ -10,5 +10,5 @@ const firebaseConfig = {
 
 const CONFIG = {
     GEMINI_API_KEY: "AIzaSyBo8mSbCsk9laM1ErdrqYVlkESwdtwHBp4",
-    API_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    API_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 };
