@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Друг | Gemini UA</title>
+    <title>AI Друг | Gemini 2.0 Flash</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     
     <script type="importmap">
         {
@@ -25,11 +24,8 @@
             </div>
             
             <div id="auth-section">
-                <button id="login-btn" class="login-btn">
-                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18">
-                    Увійти через Google
-                </button>
-                <div id="user-profile" class="user-profile hidden">
+                <button id="login-btn" class="login-btn">Увійти через Google</button>
+                <div id="user-profile" class="hidden">
                     <img id="user-avatar" src="" alt="Avatar">
                     <div class="user-info">
                         <span id="user-name"></span>
@@ -38,27 +34,25 @@
                 </div>
             </div>
 
-            <div class="chat-history-list" id="history-list">
-                <p class="empty-state">Історія порожня</p>
+            <div class="chat-history" id="history-list">
+                <p class="empty-history">Немає історії чату</p>
             </div>
         </aside>
 
         <main class="chat-wrapper">
-            <div class="chat-container" id="chat-container">
+            <div id="chat-container" class="chat-container">
                 <div class="welcome-screen">
                     <h1>Привіт! Я твій AI Друг.</h1>
-                    <p>Авторизуйся, щоб розпочати спілкування.</p>
+                    <p>Будь ласка, авторизуйся, щоб почати діалог.</p>
                 </div>
             </div>
 
             <div class="input-area">
                 <div class="input-wrapper">
                     <textarea id="user-input" placeholder="Напишіть повідомлення..." rows="1" disabled></textarea>
-                    <button id="send-btn" disabled>
-                        <svg viewBox="0 0 24 24" width="24" height="24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"></path></svg>
-                    </button>
+                    <button id="send-btn" disabled>➤</button>
                 </div>
-                <p class="disclaimer">Працює на базі Gemini 1.5 Flash</p>
+                <p class="disclaimer">Працює на базі Gemini 2.0 Flash</p>
             </div>
         </main>
     </div>
